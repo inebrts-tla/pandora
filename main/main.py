@@ -4,8 +4,9 @@ from concurrent.futures import ThreadPoolExecutor
 from aiohttp import ClientTimeout
 import os
 
-creator = "CREATOR NAME"
-basepath = "DIRECTORY YOU WANT TO SAVE"
+creator = "CREATOR_NAME"
+service = "SERVICE_NAME"
+basepath = "DIRECTORY_WHERE_YOU_WANT TO SAVE" + '\\'
 path_to_save = basepath + "\\" f"{creator}" + '.txt'
 async def get_lbe(url):
     async with aiohttp.ClientSession() as session:
@@ -23,7 +24,7 @@ This Main() Needs Some Repair
 """
 # async def main():
 
-#     urls = [f"https://coomer.su/api/v1/onlyfans/user/lovebyelenita?o={i}" for i in range(50,501) if i%50 ==0]
+#     urls = [f"https://coomer.su/api/v1/{service}/user/{creator}?o={i}" for i in range(50,501) if i%50 ==0]
 #     tasks = [get_lbe(url) for url in urls]
 #     responses = await asyncio.gather(*tasks)
 #     for response in responses:
@@ -32,7 +33,7 @@ This Main() Needs Some Repair
 #             # Append the file path to the text file
 #             await append_links(str(file_path))
 #     datalinks = []
-#     text = await get_lbe("https://coomer.su/api/v1/onlyfans/user/lovebyelenita?o=50")
+#     text = await get_lbe("https://coomer.su/api/v1/{service}/user/{creator}?o=50")
 #     for url in urls:
 #         text = await get_lbe(url)
 #         datalinks.append(text)
@@ -54,8 +55,8 @@ This Main() Needs Some Repair
 
 async def main():
     # URLs to fetch
-    urls = [f"https://coomer.su/api/v1/onlyfans/user/{creator}?o={i}" for i in range(50, 301, 50)]
-    urls.insert(0,f"https://coomer.su/api/v1/onlyfans/user/{creator}")
+    urls = [f"https://coomer.su/api/v1/{service}/user/{creator}?o={i}" for i in range(50, 1201, 50)]
+    urls.insert(0,f"https://coomer.su/api/v1/{service}/user/{creator}")
     
     # List of tasks to fetch the data
     tasks = [get_lbe(url) for url in urls]
@@ -68,18 +69,22 @@ async def main():
         # print(f"Response content: {response}")  # To ConsoleLog the response
 
         # If the response is a list, iterate through it (for example, extracting file paths)
-        if isinstance(response, list):
+        # if isinstance(response, list):
             # Iterate through the list and extract file paths
-            for item in response:
-                file_path = item.get('file', {}).get('path', None) if isinstance(item, dict) else None
-                if file_path:
-                    await append_links(str(file_path))
-        else:
-            # Get the path from json/Dict
-            print("else is working")
-            file_path = response.get('file', {}).get('path', None)
-            if file_path:
-                await append_links(str(file_path))
+        for item in response:
+            if isinstance(item, dict):
+                file_path = item.get('file', {})
+                path = file_path.get('path', None)
+                name = file_path.get('name', None)
+                if path and name:
+                    formatted_link = f"{path}?f={name}"
+                    await append_links(str(formatted_link))
+        # else:
+        #     # Get the path from json/Dict
+        #     print("else is working")
+        #     file_path = response.get('file', {}).get('name', None)
+        #     if file_path:
+        #         await append_links(str(file_path))
 
 
 
@@ -92,7 +97,7 @@ RUN TO GET URLS AND APPEND THEM
 
 # if __name__ == "__main__":
         # print(url)
-# asyncio.run(main())
+asyncio.run(main())
 
 
 
@@ -101,7 +106,10 @@ RUN TO GET URLS AND APPEND THEM
 
 """
 
+"""
+Change the Semaphore Digit to download more fast. But it will Give error (SSL error). So do it at your own risk
 
+"""
 semaphore = asyncio.Semaphore(2)
 async def dimg(url,filename):
     async with semaphore:
@@ -149,7 +157,8 @@ def start_image_download():
     basedataimg = []
     for dt in datatext:
         if dt.strip().endswith(".jpg"):
-            basedataimg.append(f"https://img.coomer.su/thumbnail/data{dt}")
+            # basedataimg.append(f"https://img.coomer.su/thumbnail/data{dt}")
+            basedataimg.append(f"https://n4.coomer.su/data{dt}")
     asyncio.run(download_images(basedataimg))
 
 start_image_download()
